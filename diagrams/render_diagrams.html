@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { background: #fff; font-family: Arial, sans-serif; padding: 40px; }
+    .diagram-box {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 60px;
+      page-break-inside: avoid;
+    }
+    .diagram-box h2 {
+      font-size: 18px;
+      color: #333;
+      margin: 0 0 20px 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+    .separator { height: 40px; }
+  </style>
+</head>
+<body>
+  <div id="d1" class="diagram-box">
+    <h2>Diagram 1: Entity-Relationship Diagram</h2>
+    <pre class="mermaid">
+erDiagram
+    USER ||--o{ LEAD : "owns"
+    LEAD ||--o{ INTERACTION : "has"
+    LEAD ||--o{ LEAD_SCORE_HISTORY : "records"
+    LEAD ||--o{ FILE_ATTACHMENT : "has"
+    USER ||--o{ SEGMENT : "creates"
+    USER ||--o{ CAMPAIGN : "creates"
+    USER ||--o{ WORKFLOW : "creates"
+    CAMPAIGN }o--|| SEGMENT : "targets"
+
+    USER {
+        int id PK
+        string name
+        string email UK
+        string password_hash
+        string role
+    }
+    LEAD {
+        int id PK
+        int user_id FK
+        string name
+        string email UK
+        string company
+        string phone
+        enum stage
+        decimal deal_value
+        int ai_score
+        enum sentiment
+        boolean churn_risk
+        int churn_risk_pct
+        datetime last_contacted
+        datetime created_at
+    }
+    INTERACTION {
+        int id PK
+        int lead_id FK
+        enum channel
+        text body
+        enum sentiment
+        datetime created_at
+    }
+    LEAD_SCORE_HISTORY {
+        int id PK
+        int lead_id FK
+        int score
+        datetime recorded_at
+    }
+    </pre>
+  </div>
+
+  <div id="d2" class="diagram-box">
+    <h2>Diagram 2: CRM Process Lifecycle</h2>
+    <pre class="mermaid">
+flowchart TD
+    A["Lead Captured
+    (Portal / Manual Entry)"] --> B["AI Score Computed
+    (Rule-based: 0-100)"]
+    B --> C["Lead Stage: Lead"]
+    C --> D{"Qualification
+    Criteria Met?"}
+    D -- Yes --> E["Stage: Qualified"]
+    D -- No --> F["Nurture via
+    Campaigns"]
+    F --> D
+    E --> G["Stage: Proposal"]
+    G --> H{"Deal
+    Closed?"}
+    H -- Yes --> I["Stage: Closed (Won)"]
+    H -- No --> J["Churn Risk Assessment"]
+    J --> K{"At Risk?"}
+    K -- Yes --> L["Auto Re-engagement Email"]
+    L --> G
+    K -- No --> G
+    I --> M["Post-Sale CSAT Feedback"]
+    </pre>
+  </div>
+
+  <div id="d3" class="diagram-box">
+    <h2>Diagram 3: Data-Driven Decision Flow</h2>
+    <pre class="mermaid">
+flowchart LR
+    subgraph "Data Collection"
+        A["Lead Data"] --> D["MySQL Database"]
+        B["Interactions"] --> D
+        C["CSAT Feedback"] --> D
+    end
+    subgraph "AI Processing"
+        D --> E["VADER Sentiment Analysis"]
+        D --> F["Lead Scoring Engine"]
+        D --> G["Churn Risk Predictor"]
+    end
+    subgraph "Actionable Insights"
+        E --> H["Dashboard Sentiment Charts"]
+        F --> I["Prioritised Lead Rankings"]
+        G --> J["At-Risk Alert List"]
+    end
+    </pre>
+  </div>
+
+  <div id="d4" class="diagram-box">
+    <h2>Diagram 4: System Architecture</h2>
+    <pre class="mermaid">
+flowchart TB
+    subgraph "Client Layer"
+        Browser["Web Browser"]
+        Portal["Customer Portal"]
+    end
+
+    subgraph "Frontend Layer - Next.js 16"
+        AuthGuard["AuthGuard - localStorage session"]
+        Dashboard["Dashboard"]
+        Leads["Leads Page"]
+        Pipeline["Pipeline Kanban"]
+        Churn["Churn Risk"]
+        Assistant["AI Assistant"]
+        Campaigns["Campaigns"]
+    end
+
+    subgraph "API Layer - Flask 3.0"
+        AuthAPI["/api/auth/*"]
+        LeadAPI["/api/leads/*"]
+        DashAPI["/api/dashboard"]
+        PipeAPI["/api/pipeline"]
+        ChurnAPI["/api/churn-risk"]
+        ChatAPI["/api/assistant/chat"]
+        PublicAPI["/api/public/*"]
+        CampaignAPI["/api/campaigns"]
+    end
+
+    subgraph "AI/ML Engine"
+        VADER["VADER Sentiment Analyzer"]
+        Scorer["Rule-Based Lead Scoring"]
+        ChurnCalc["Churn Risk Calculator"]
+        MLModel["Gradient Boosting ML Model"]
+        Gemini["Google Gemini AI Chat"]
+    end
+
+    subgraph "Data Layer"
+        MySQL[("MySQL Database")]
+        Redis[("Redis Cache + Broker")]
+    end
+
+    subgraph "Background Workers"
+        CeleryW["Celery Worker"]
+        CeleryB["Celery Beat Scheduler"]
+        SMTP["SMTP Email Server"]
+    end
+
+    Browser --> AuthGuard
+    Portal --> PublicAPI
+    AuthGuard --> Dashboard & Leads & Pipeline & Churn & Assistant & Campaigns
+    Dashboard --> DashAPI
+    Leads --> LeadAPI
+    Pipeline --> PipeAPI
+    Churn --> ChurnAPI
+    Assistant --> ChatAPI
+    Campaigns --> CampaignAPI
+
+    AuthAPI & LeadAPI & DashAPI & PipeAPI --> MySQL
+    LeadAPI --> VADER & Scorer & ChurnCalc
+    ChatAPI --> Gemini
+    PublicAPI --> MySQL
+
+    CeleryB --> CeleryW
+    CeleryW --> MLModel & ChurnCalc & SMTP
+    CeleryW --> MySQL
+    Redis --> CeleryW
+    </pre>
+  </div>
+
+  <div id="d5" class="diagram-box">
+    <h2>Diagram 5: Data Flow Sequence</h2>
+    <pre class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant F as Frontend (Next.js)
+    participant B as Backend (Flask)
+    participant V as VADER NLP
+    participant S as Scoring Engine
+    participant C as Churn Calculator
+    participant DB as MySQL
+
+    U->>F: Create Lead / Log Interaction
+    F->>B: POST /api/leads or /api/leads/:id/interactions
+    B->>DB: Save lead/interaction record
+    B->>V: Analyse text sentiment
+    V-->>B: Positive / Neutral / Negative
+    B->>S: Compute AI score (0-100)
+    S-->>B: Score based on stage + value + sentiment + recency
+    B->>C: Evaluate churn risk
+    C-->>B: is_at_risk: bool, risk_pct: int
+    B->>DB: Update lead fields + save score history
+    B-->>F: Return updated lead JSON
+    F-->>U: Render updated UI
+    </pre>
+  </div>
+
+  <div id="d6" class="diagram-box">
+    <h2>Diagram 6: Background Automation Flow</h2>
+    <pre class="mermaid">
+flowchart LR
+    subgraph "Celery Beat Scheduler"
+        T1["Midnight: refresh_lead_scores"]
+        T2["8 AM: send_reengagement_emails"]
+        T3["Every 6h: refresh_churn_risk"]
+        T4["Every 1h: aggregate_sentiment_trends"]
+    end
+
+    subgraph "Celery Worker"
+        W1["Load ML Model - Gradient Boosting"]
+        W2["Query all leads"]
+        W3["Predict scores"]
+        W4["Find dormant leads - 30+ days"]
+        W5["Send SMTP emails"]
+        W6["Recalculate churn"]
+        W7["Cache trends in Redis"]
+    end
+
+    T1 --> W1 --> W2 --> W3
+    T2 --> W4 --> W5
+    T3 --> W6
+    T4 --> W7
+    </pre>
+  </div>
+
+  <div id="d7" class="diagram-box">
+    <h2>Diagram 7: Use Case Diagram</h2>
+    <pre class="mermaid">
+flowchart TD
+    subgraph "Actors"
+        SR["Sales Rep"]
+        SM["Sales Manager"]
+        CUST["Customer / Prospect"]
+        SYS["System - Celery"]
+    end
+
+    subgraph "Use Cases"
+        UC1["UC1: Register / Login"]
+        UC2["UC2: Create Lead"]
+        UC3["UC3: View and Edit Lead"]
+        UC4["UC4: Log Interaction"]
+        UC5["UC5: Move Lead in Pipeline"]
+        UC6["UC6: View Dashboard"]
+        UC7["UC7: View Churn Risk"]
+        UC8["UC8: Chat with AI Assistant"]
+        UC9["UC9: Create Campaign"]
+        UC10["UC10: Submit Inquiry via Portal"]
+        UC11["UC11: Submit CSAT Feedback"]
+        UC12["UC12: Auto-Score Leads"]
+        UC13["UC13: Auto-Send Re-engagement Email"]
+        UC14["UC14: Auto-Refresh Churn Risk"]
+        UC15["UC15: Create Workflow"]
+        UC16["UC16: Create Segment"]
+    end
+
+    SR --> UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC9 & UC15 & UC16
+    SM --> UC6 & UC7 & UC9
+    CUST --> UC10 & UC11
+    SYS --> UC12 & UC13 & UC14
+    </pre>
+  </div>
+
+  <script>
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'default',
+      securityLevel: 'loose',
+      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+      sequence: { useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>
